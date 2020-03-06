@@ -21,9 +21,12 @@ yum install fail2ban -y
 systemctl start fail2ban
 ```
 
-2. Set up config
+2. Set up config (only added/modified lines are shown here)
+
 - file: /etc/openvpn/server/server.conf
   ```
+  tls-server
+
   ca /root/pki/ca.crt
   cert /root/pki/issued/server.crt
   key /root/pki/private/server.key
@@ -34,11 +37,6 @@ systemctl start fail2ban
 
   user nobody
   group nobody
-  ```
-
-- file: client.ovpn
-  ```
-  remote 192.168.99.104
   ```
 
 <!-- - iptables script: -->
@@ -60,8 +58,23 @@ systemctl start fail2ban
 <!--   ``` -->
 
 3. Client conf
+- file: client.ovpn (the keys are in the same location)
+  ```
+  tls-client
+  remote 192.168.99.104
+  ca ca.crt
+  key client.key
+  cert client.crt
+  tls-auth ta.key 1
+  remote-cert-tls server
+  dev tun
+  ```
 
 4. Hardening
+- passwords
+  entropy: +80 bits
 - ports whithelisting
+  only 22 and 1194
 - firewalld
 - SeLinux
+  enforcing
