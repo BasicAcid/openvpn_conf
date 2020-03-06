@@ -1,0 +1,37 @@
+---
+- hosts: root@192.168.99.104
+  user: root
+  become: yes
+  become_user: root
+  tasks:
+    - name: Install packages
+      shell: |
+        yum install epel-release -y
+        yum install openvpn easy-rsa fail2ban -y
+
+    - name: Start and enable fail2ban
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    - name: Add easyRSA alias
+      shell: echo "alias easy-rsa='/usr/share/easy-rsa/3.0.6/easyrsa'" > ~/.bashrc
+
+    - name: Init PKI
+      shell: easy-rsa init-pki
+
+    - name: Create certificate authority
+      shell: easy-rsa build-ca
+
+    - name: Create server key
+      shell: easy-rsa build-server-full server nopass
+
+    - name: Create client key
+      shell: easy-rsa build-client-full client
+
+    - name: Generate Diffie Helman
+      shell: easy-rsa gen-dh
+
+    - name: Generate shared-secret key for TLS auth
+      shell: openvpn --genkey --secret ta.key
